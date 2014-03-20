@@ -18,6 +18,7 @@ Changelog:
 | setname(optional)       | The set we want to retrieve the image from, as listed on [magiccards.info](http://magiccards.info/sitemap.html)    |
 
 ### TCGPlayer Prices (/api/tcgplayer/price.json)
+Returns lowest, median, and highest prices (in that order).
 
 | Parameter     | Description                                   |
 | ------------- | --------------------------------------------- |
