@@ -69,7 +69,7 @@ def getTCGPlayerPrices(cardName, cardSet):
 
     lowPrice = rawHTML[startLowIndex:endLowIndex]
 
-    #   Scrape for the mid price
+    #   Scrape for the median price
     tempIndex = rawHTML.find('>M:')
     startMidIndex = rawHTML.find("$", tempIndex)
     endMidIndex = rawHTML.find("<", startMidIndex)
