@@ -4,6 +4,8 @@
 
 import urllib
 import logging
+import json
+import sys
 
 #
 #   Retrieves a URL to the card's image as represented by http://magiccards.info
@@ -55,32 +57,46 @@ def getEbayPrice(cardName, cardSet):
 #   Retrieves the low, mid, and high prices of a card as shown on http://tcgplayer.com
 #
 def getTCGPlayerPrices(cardName, cardSet):
-    #   Open the TCGPlayer URL
-    tcgPlayerURL = "http://magic.tcgplayer.com/db/magic_single_card.asp?cn=" + urllib.quote(cardName)
-    if cardSet:
-       tcgPlayerURL += "&sn=" + urllib.quote(cardSet)
-    htmlFile = urllib.urlopen(tcgPlayerURL)
-    rawHTML = htmlFile.read()
-
-    #   Scrape for the low price
-    tempIndex = rawHTML.find('>L:')
-    startLowIndex = rawHTML.find("$", tempIndex)
-    endLowIndex = rawHTML.find("<", startLowIndex)
-
-    lowPrice = rawHTML[startLowIndex:endLowIndex]
-
-    #   Scrape for the mid price
-    tempIndex = rawHTML.find('>M:')
-    startMidIndex = rawHTML.find("$", tempIndex)
-    endMidIndex = rawHTML.find("<", startMidIndex)
+    deckBrewURL = "https://api.deckbrew.com/mtg/cards?name=" + urllib.quote(cardName)
+    htmlFile = urllib.urlopen(deckBrewURL)
+    jsonResults = json.loads(htmlFile.read())
     
-    midPrice = rawHTML[startMidIndex:endMidIndex]
-
-    #   Scrape for the high price
-    tempIndex = rawHTML.find('>H:')
-    startHighIndex = rawHTML.find("$", tempIndex)
-    endHighIndex = rawHTML.find("<", startHighIndex)
-    
-    highPrice = rawHTML[startHighIndex:endHighIndex]
+    lowPrice = ""
+    midPrice = ""
+    highPrice = ""
+    for jsonResult in jsonResults:
+        if jsonResult["name"].lower() == cardName.lower():
+            lowPrice = sys.maxint
+            midPrice = 0
+            highPrice = -1
+            
+            editions = jsonResult["editions"]
+            if cardSet:
+                for edition in jsonResult["editions"]:
+                    if edition["set"].lower() == cardSet.lower():
+                        editions = [edition]
+                        break
+            
+            prices = len(editions)
+            for edition in editions:
+                if edition.has_key("price"):
+                    price = edition["price"]
+                    if lowPrice > int(price["low"]):
+                        lowPrice = int(price["low"])
+                    if highPrice < int(price["high"]):
+                        highPrice = int(price["high"])
+                    midPrice += int(price["median"])
+                else:
+                    prices -= 1
+            
+            if prices <= 0 or lowPrice == sys.maxint or highPrice < 0:
+                lowPrice = ""
+                midPrice = ""
+                highPrice = ""
+                break
+            
+            lowPrice = "$%.2f" % (lowPrice / 100.0)
+            midPrice = "$%.2f" % ((midPrice / float(prices)) / 100.0)
+            highPrice = "$%.2f" % (highPrice / 100.0)
 
     return [lowPrice, midPrice, highPrice]
