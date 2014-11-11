@@ -93,10 +93,10 @@ def getTCGPlayerPrices(cardName, cardSet):
                 lowPrice = ""
                 midPrice = ""
                 highPrice = ""
-                break
-            
-            lowPrice = "$%.2f" % (lowPrice / 100.0)
-            midPrice = "$%.2f" % ((midPrice / float(prices)) / 100.0)
-            highPrice = "$%.2f" % (highPrice / 100.0)
+            else:
+                lowPrice = "$%.2f" % (lowPrice / 100.0)
+                midPrice = "$%.2f" % ((midPrice / float(prices)) / 100.0)
+                highPrice = "$%.2f" % (highPrice / 100.0)
+            break
 
     return [lowPrice, midPrice, highPrice]
